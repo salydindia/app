@@ -17,46 +17,20 @@ import {SceneBuilder, Header, Heading} from '../../components/Shared';
 import {GRAY} from '../../constants/colors';
 import MenuList from '../../components/Order/MenuList';
 import OutletHeader from '../../components/Order/OutletHeader';
+import {useContext} from 'react';
+import {GlobalContext} from '../../context/GlobalState';
+import {gql, useQuery} from '@apollo/client';
 
 const {width, height} = Dimensions.get('screen');
 
-// const data = [
-//   {
-//     id: 0,
-//     name: 'Pav Bhaji (1 Plate)',
-//     type: 0,
-//     description:
-//       'Leo vel orci porta non pulvinar neque laoreet. Sed blandit libero volutpat sed. Eu volutpat odio facilisis mauris. Pellentesque id nibh tortor id aliquet lectus.',
-//     price: 45,
-//     max: 3,
-//   },
-//   {
-//     id: 1,
-//     name: 'Egg Roll (Serves 1)',
-//     type: 1,
-//     description:
-//       'Leo vel orci porta non pulvinar neque laoreet. Sed blandit libero volutpat sed. Eu volutpat odio facilisis mauris. Pellentesque id nibh tortor id aliquet lectus.',
-//     price: 35,
-//     max: 5,
-//   },
-//   {
-//     id: 2,
-//     name: 'Murgh Mussallam (4 pcs.)',
-//     type: 2,
-//     description:
-//       'Leo vel orci porta non pulvinar neque laoreet. Sed blandit libero volutpat sed. Eu volutpat odio facilisis mauris. Pellentesque id nibh tortor id aliquet lectus.',
-//     price: 175,
-//     max: 4,
-//   },
-// ];
-
 const OrderScene = ({navigation, route}) => {
-  const {restro} = route.params;
+  const {globalRoomId} = useContext(GlobalContext);
 
   const [scrollYPosition, setScrollYPosition] = useState(0);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [headerColor, setHeaderColor] = useState('transparent');
   const [headingTint, setHeadingTint] = useState(255);
+  const [restro, setRestro] = useState({});
 
   const handleOnScroll = (event) => {
     if (event.nativeEvent.contentOffset.y < height / 2) {
@@ -98,6 +72,38 @@ const OrderScene = ({navigation, route}) => {
       }),
     [navigation],
   );
+
+  const GET_RESTRODETAILS = gql`
+    query GETRESTRO($roomId: Int!) {
+      getRestroDetails(roomId: $roomId) {
+        _id
+        users {
+          _id
+          name
+        }
+        table {
+          _id
+        }
+        tableOf {
+          _id
+          name
+          menu {
+            _id
+            name
+            price
+            maxQuantity
+            description
+            category
+          }
+        }
+      }
+    }
+  `;
+
+  const {loading, error, data} = useQuery(GET_RESTRODETAILS, {
+    variables: {roomId: parseInt(globalRoomId)},
+    onCompleted: (mydata) => setRestro(mydata.getRestroDetails.tableOf),
+  });
 
   return (
     <ScrollView onScroll={handleOnScroll} stickyHeaderIndices={[1]}>

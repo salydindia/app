@@ -1,5 +1,5 @@
 const apiUrl = {
-  devUrl: 'http://8b40f9235c0e.ngrok.io',
+  devUrl: '',
   prodUrl: 'https://salyd-server.herokuapp.com/',
 };
 
